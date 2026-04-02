@@ -1,15 +1,15 @@
 [package]
 name = "module-08-database"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-axum = { workspace = true }
-tokio = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-sqlx = { workspace = true }
-uuid = { workspace = true }
-chrono = { workspace = true }
-dotenvy = { workspace = true }
-thiserror = { workspace = true }
+axum.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+dotenvy.workspace = true
+thiserror.workspace = true

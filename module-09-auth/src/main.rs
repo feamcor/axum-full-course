@@ -7,15 +7,15 @@
 //! - Protected routes
 
 use axum::{
+    Json, Router,
     extract::{Request, State},
     http::StatusCode,
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{get, post},
-    Json, Router,
 };
 use chrono::{Duration, Utc};
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -71,7 +71,7 @@ struct CurrentUser {
 // ============================================================================
 
 fn hash_password(password: &str) -> String {
-    use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
+    use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
     let salt = SaltString::generate(&mut rand::rngs::OsRng);
     Argon2::default()
         .hash_password(password.as_bytes(), &salt)
@@ -95,9 +95,11 @@ fn verify_password(password: &str, hash: &str) -> bool {
 
 fn create_token(config: &AuthConfig, user_id: &str, role: &str) -> Result<String, StatusCode> {
     let expiry = Utc::now() + Duration::hours(config.jwt_expiry_hours);
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let exp = expiry.timestamp() as usize;
     let claims = Claims {
         sub: user_id.to_string(),
-        exp: expiry.timestamp() as usize,
+        exp,
         role: role.to_string(),
     };
     encode(

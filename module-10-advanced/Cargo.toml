@@ -1,14 +1,14 @@
 [package]
 name = "module-10-advanced"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 axum = { workspace = true, features = ["ws", "multipart"] }
-axum-extra = { workspace = true }
-tokio = { workspace = true }
-tokio-stream = "0.1"
-serde = { workspace = true }
-serde_json = { workspace = true }
-tower-http = { workspace = true }
-futures = { workspace = true }
+axum-extra.workspace = true
+tokio.workspace = true
+tokio-stream.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tower-http.workspace = true
+futures.workspace = true

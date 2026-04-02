@@ -1,13 +1,13 @@
 [package]
 name = "module-11-testing"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-axum = { workspace = true }
-tokio = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-tower = { workspace = true }
-tower-service = { workspace = true }
-http-body-util = { workspace = true }
+axum.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tower.workspace = true
+tower-service.workspace = true
+http-body-util.workspace = true

@@ -6,7 +6,7 @@
 //! - Database connection pools
 //! - Multiple state types
 
-use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
+use axum::{Json, Router, extract::State, http::StatusCode, routing::get};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -39,7 +39,7 @@ async fn get_config(State(config): State<Arc<AppConfig>>) -> Json<serde_json::Va
 // ============================================================================
 
 /// A simple in-memory "database" of todos
-/// Using RwLock for better read performance (multiple readers, single writer)
+/// Using `RwLock` for better read performance (multiple readers, single writer)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Todo {
     id: String,
@@ -58,7 +58,7 @@ struct UpdateTodo {
     completed: Option<bool>,
 }
 
-/// Our mutable state - a thread-safe HashMap
+/// Our mutable state - a thread-safe `HashMap`
 type TodoStore = Arc<RwLock<HashMap<String, Todo>>>;
 
 // List all todos
@@ -171,7 +171,7 @@ async fn increment_request_count(State(state): State<CombinedState>) -> &'static
 // ============================================================================
 
 /// Simulating a database connection pool
-/// In a real app, this would be sqlx::PgPool or similar
+/// In a real app, this would be `sqlx::PgPool` or similar
 #[derive(Clone)]
 #[allow(dead_code)] // Fields shown for demonstration
 struct DbPool {
@@ -188,6 +188,7 @@ impl DbPool {
     }
 
     // Simulated query
+    #[allow(clippy::unused_async)]
     async fn query(&self, _sql: &str) -> Result<Vec<String>, String> {
         // In real app: sqlx::query!(...).fetch_all(&self.pool).await
         Ok(vec!["result1".to_string(), "result2".to_string()])

@@ -8,8 +8,8 @@
 //! - Basic request/response flow
 
 use axum::{
-    routing::{get, post},
     Router,
+    routing::{get, post},
 };
 
 // ============================================================================
@@ -17,7 +17,7 @@ use axum::{
 // ============================================================================
 
 /// The simplest possible handler - just returns a string
-/// 
+///
 /// In Axum, a handler is any async function that returns something
 /// implementing `IntoResponse`. Strings automatically implement this!
 async fn hello_world() -> &'static str {
@@ -35,7 +35,7 @@ async fn hello_axum() -> String {
 // ============================================================================
 
 /// A common pattern - health check endpoint for monitoring
-/// 
+///
 /// This is essential for:
 /// - Load balancers to check if your service is alive
 /// - Kubernetes liveness/readiness probes
@@ -49,7 +49,7 @@ async fn health_check() -> &'static str {
 // ============================================================================
 
 /// You can return tuples for more control
-/// (StatusCode, headers, body) or (StatusCode, body)
+/// (`StatusCode`, headers, body) or (`StatusCode`, body)
 use axum::http::StatusCode;
 
 async fn with_status() -> (StatusCode, &'static str) {
@@ -59,7 +59,7 @@ async fn with_status() -> (StatusCode, &'static str) {
 /// Return different status codes based on conditions
 async fn conditional_response() -> (StatusCode, &'static str) {
     let is_working = true;
-    
+
     if is_working {
         (StatusCode::OK, "Everything is working!")
     } else {
@@ -74,7 +74,7 @@ async fn conditional_response() -> (StatusCode, &'static str) {
 /// A simple POST handler that echoes back the body
 /// We'll learn more about extractors in Module 03
 async fn echo(body: String) -> String {
-    format!("You sent: {}", body)
+    format!("You sent: {body}")
 }
 
 // ============================================================================
@@ -84,7 +84,7 @@ async fn echo(body: String) -> String {
 #[tokio::main]
 async fn main() {
     // Build our application router
-    // 
+    //
     // The Router is the core of Axum - it maps paths to handlers
     // You can chain multiple routes together using the builder pattern
     let app = Router::new()
@@ -92,16 +92,14 @@ async fn main() {
         .route("/", get(hello_world))
         .route("/hello", get(hello_axum))
         .route("/health", get(health_check))
-        
         // Routes with different status codes
         .route("/created", get(with_status))
         .route("/status", get(conditional_response))
-        
         // POST route (we'll explore this more later)
         .route("/echo", post(echo));
 
     // Create a TCP listener
-    // 
+    //
     // In Axum 0.8+, we use `axum::serve` instead of hyper::Server
     // This is the new, simplified way to run an Axum application
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
@@ -122,7 +120,7 @@ async fn main() {
     println!("💡 Example: curl -X POST -d 'Hello!' http://localhost:3000/echo");
 
     // Start serving requests
-    // 
+    //
     // `axum::serve` is the new function in Axum 0.8+
     // It replaces the old hyper::Server approach
     axum::serve(listener, app)

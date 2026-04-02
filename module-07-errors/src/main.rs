@@ -2,16 +2,16 @@
 //!
 //! Proper error handling in Axum:
 //! - Custom error types with thiserror
-//! - IntoResponse for errors
+//! - `IntoResponse` for errors
 //! - Result-based handlers
 //! - Error recovery patterns
 
 use axum::{
+    Json, Router,
     extract::Path,
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::get,
-    Json, Router,
 };
 use serde::Serialize;
 use thiserror::Error;
@@ -54,9 +54,10 @@ impl IntoResponse for AppError {
         let (status, message) = match &self {
             AppError::UserNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
             AppError::InvalidInput(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
+            AppError::DatabaseError(_) | AppError::Internal => {
+                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+            }
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, self.to_string()),
-            AppError::Internal => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
         };
 
         let body = ErrorResponse {
@@ -99,7 +100,7 @@ async fn validate_input(Path(value): Path<String>) -> Result<String, AppError> {
             "Value must be at least 3 characters".to_string(),
         ));
     }
-    Ok(format!("Valid input: {}", value))
+    Ok(format!("Valid input: {value}"))
 }
 
 async fn protected_resource() -> Result<&'static str, AppError> {
@@ -135,7 +136,7 @@ fn find_user(id: u64) -> Result<User, AppError> {
     } else {
         Ok(User {
             id,
-            name: format!("User{}", id),
+            name: format!("User{id}"),
         })
     }
 }

@@ -1,18 +1,18 @@
 //! # Module 10: Advanced Features
 //!
-//! WebSockets, SSE, File uploads, Static files
+//! `WebSockets`, SSE, File uploads, Static files
 
 use axum::{
+    Router,
     extract::{
-        ws::{Message, WebSocket, WebSocketUpgrade},
         Multipart,
+        ws::{Message, WebSocket, WebSocketUpgrade},
     },
     response::{
-        sse::{Event, KeepAlive, Sse},
         Html, IntoResponse,
+        sse::{Event, KeepAlive, Sse},
     },
     routing::{get, post},
-    Router,
 };
 use futures::stream::{self, Stream};
 use std::{convert::Infallible, time::Duration};
@@ -30,7 +30,7 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
 async fn handle_socket(mut socket: WebSocket) {
     while let Some(msg) = socket.recv().await {
         if let Ok(Message::Text(text)) = msg {
-            let response = format!("Echo: {}", text);
+            let response = format!("Echo: {text}");
             if socket.send(Message::Text(response.into())).await.is_err() {
                 break;
             }

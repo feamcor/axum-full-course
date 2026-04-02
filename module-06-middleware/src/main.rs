@@ -2,16 +2,16 @@
 //!
 //! Tower middleware integration in Axum:
 //! - Built-in middleware (CORS, Compression, Timeout)
-//! - Custom middleware with from_fn
+//! - Custom middleware with `from_fn`
 //! - Route-specific layers
 
 use axum::{
+    Router,
     extract::Request,
-    http::{header, HeaderValue, Method, StatusCode},
+    http::{HeaderValue, Method, StatusCode, header},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::get,
-    Router,
 };
 use std::time::{Duration, Instant};
 use tower::ServiceBuilder;

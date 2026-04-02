@@ -3,17 +3,17 @@
 //! Learn how to return different types of responses in Axum:
 //! - Simple types (String, &str)
 //! - JSON responses
-//! - HTML responses  
+//! - HTML responses
 //! - Custom response types
 //! - Status codes and headers
-//! - The IntoResponse trait
+//! - The `IntoResponse` trait
 
 use axum::{
+    Router,
     body::Body,
-    http::{header, HeaderMap, HeaderValue, StatusCode},
+    http::{HeaderMap, HeaderValue, StatusCode, header},
     response::{Html, IntoResponse, Json, Redirect, Response},
     routing::get,
-    Router,
 };
 use serde::Serialize;
 
@@ -151,11 +151,12 @@ async fn html_page() -> Html<&'static str> {
 }
 
 /// Dynamic HTML
+#[allow(clippy::format_collect, clippy::needless_raw_string_hashes)]
 async fn dynamic_html() -> Html<String> {
-    let items = vec!["Routing", "Extractors", "Responses", "Middleware"];
+    let items = ["Routing", "Extractors", "Responses", "Middleware"];
     let list_items: String = items
         .iter()
-        .map(|item| format!("<li>{}</li>", item))
+        .map(|item| format!("<li>{item}</li>"))
         .collect();
 
     Html(format!(
@@ -167,7 +168,7 @@ async fn dynamic_html() -> Html<String> {
             <style>
                 body {{ font-family: system-ui; padding: 20px; }}
                 ul {{ list-style-type: none; padding: 0; }}
-                li {{ 
+                li {{
                     padding: 10px 15px;
                     margin: 5px 0;
                     background: #f0f0f0;
@@ -177,11 +178,10 @@ async fn dynamic_html() -> Html<String> {
         </head>
         <body>
             <h1>Course Topics</h1>
-            <ul>{}</ul>
+            <ul>{list_items}</ul>
         </body>
         </html>
-        "#,
-        list_items
+        "#
     ))
 }
 
@@ -207,10 +207,7 @@ async fn with_headers() -> (HeaderMap, &'static str) {
 /// Status + headers + body
 async fn full_response() -> (StatusCode, HeaderMap, &'static str) {
     let mut headers = HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        HeaderValue::from_static("text/plain"),
-    );
+    headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/plain"));
     headers.insert("X-Request-Id", HeaderValue::from_static("12345"));
 
     (StatusCode::OK, headers, "Full control over the response!")
@@ -241,7 +238,7 @@ async fn new_location() -> &'static str {
 // LESSON 6: The IntoResponse Trait
 // ============================================================================
 
-/// Custom response type implementing IntoResponse
+/// Custom response type implementing `IntoResponse`
 struct CustomResponse {
     message: String,
     status: StatusCode,
@@ -342,20 +339,16 @@ async fn main() {
         .route("/string", get(static_string))
         .route("/owned", get(owned_string))
         .route("/status", get(with_status))
-        
         // JSON responses
         .route("/json/user", get(json_user))
         .route("/json/users", get(json_users))
         .route("/json/created", get(json_with_status))
-        
         // HTML responses
         .route("/html", get(html_page))
         .route("/html/dynamic", get(dynamic_html))
-        
         // Headers
         .route("/headers", get(with_headers))
         .route("/full", get(full_response))
-        
         // Redirects
         .route("/redirect/permanent", get(redirect_permanent))
         .route("/redirect/temp", get(redirect_temporary))
@@ -363,12 +356,10 @@ async fn main() {
         .route("/new-location", get(new_location))
         .route("/temp-location", get(new_location))
         .route("/success", get(|| async { "Form submitted successfully!" }))
-        
         // Custom responses
         .route("/custom", get(custom_response))
         .route("/api/success", get(api_success))
         .route("/api/error", get(api_error))
-        
         // Result type
         .route("/maybe-error", get(maybe_error));
 

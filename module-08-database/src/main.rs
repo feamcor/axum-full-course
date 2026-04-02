@@ -1,20 +1,20 @@
 //! # Module 08: Database Integration
 //!
-//! SQLx with PostgreSQL in Axum:
+//! `SQLx` with `PostgreSQL` in Axum:
 //! - Connection pooling
 //! - CRUD operations
 //! - Query macros
 //! - Migrations
 
 use axum::{
+    Json, Router,
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
     routing::get,
-    Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, PgPool};
+use sqlx::{PgPool, postgres::PgPoolOptions};
 use uuid::Uuid;
 
 // ============================================================================

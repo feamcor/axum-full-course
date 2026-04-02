@@ -5,18 +5,18 @@
 //!
 //! Key topics:
 //! - Built-in extractors (Path, Query, Json, Headers)
-//! - NEW: OptionalFromRequestParts trait (Axum 0.8)
-//! - NEW: No more #[async_trait] needed!
+//! - NEW: `OptionalFromRequestParts` trait (Axum 0.8)
+//! - NEW: No more `#[async_trait]` needed!
 //! - Custom extractors
 //! - Extractor ordering (important!)
 
 use axum::{
+    Json, Router,
     body::Bytes,
     extract::{FromRequest, FromRequestParts, Path, Query, Request, State},
-    http::{header::HeaderMap, request::Parts, StatusCode},
+    http::{StatusCode, header::HeaderMap, request::Parts},
     response::{IntoResponse, Response},
     routing::{get, post},
-    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -28,7 +28,7 @@ use std::sync::Arc;
 /// Path extractor - extracts path parameters
 /// Route: GET /users/{id}
 async fn get_user(Path(id): Path<u64>) -> String {
-    format!("User ID: {}", id)
+    format!("User ID: {id}")
 }
 
 /// Query extractor - extracts query string parameters
@@ -82,7 +82,7 @@ async fn show_headers(headers: HeaderMap) -> String {
         .and_then(|v| v.to_str().ok())
         .unwrap_or("Not specified");
 
-    format!("User-Agent: {}\nContent-Type: {}", user_agent, content_type)
+    format!("User-Agent: {user_agent}\nContent-Type: {content_type}")
 }
 
 /// Raw body extractor
@@ -122,7 +122,7 @@ async fn combined_extractors(
 /// This allows better error handling - rejections can be turned into
 /// error responses instead of being silently ignored.
 ///
-/// Built-in types like Query and HeaderMap already implement this.
+/// Built-in types like Query and `HeaderMap` already implement this.
 async fn optional_query(Query(params): Query<Option<ListParams>>) -> String {
     match params {
         Some(p) => format!("Got params: page={:?}", p.page),
@@ -134,9 +134,8 @@ async fn optional_query(Query(params): Query<Option<ListParams>>) -> String {
 // LESSON 4: Custom Extractor - NO MORE #[async_trait]!
 // ============================================================================
 
-/// In Axum 0.8, you don't need #[async_trait] anymore!
+/// In Axum 0.8, you don't need #[`async_trait`] anymore!
 /// Rust now supports `impl Future<Output = _>` in traits natively.
-
 /// A custom extractor for API keys
 struct ApiKey(String);
 
@@ -171,7 +170,7 @@ where
             .headers
             .get("x-api-key")
             .and_then(|v| v.to_str().ok())
-            .map(|s| s.to_string());
+            .map(ToString::to_string);
 
         async move {
             match api_key {
@@ -183,7 +182,7 @@ where
 }
 
 async fn protected_endpoint(ApiKey(key): ApiKey) -> String {
-    format!("Access granted! Your API key: {}", key)
+    format!("Access granted! Your API key: {key}")
 }
 
 // ============================================================================
@@ -210,7 +209,7 @@ impl IntoResponse for ValidationError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
             ValidationError::InvalidJson(e) => {
-                (StatusCode::BAD_REQUEST, format!("Invalid JSON: {}", e))
+                (StatusCode::BAD_REQUEST, format!("Invalid JSON: {e}"))
             }
             ValidationError::InvalidEmail => {
                 (StatusCode::BAD_REQUEST, "Invalid email format".to_string())
@@ -232,28 +231,23 @@ where
 {
     type Rejection = ValidationError;
 
-    fn from_request(
-        req: Request,
-        state: &S,
-    ) -> impl std::future::Future<Output = Result<Self, Self::Rejection>> + Send {
-        async move {
-            // Extract JSON first
-            let Json(user): Json<ValidatedUser> = Json::from_request(req, state)
-                .await
-                .map_err(|e| ValidationError::InvalidJson(e.to_string()))?;
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
+        // Extract JSON first
+        let Json(user): Json<ValidatedUser> = Json::from_request(req, state)
+            .await
+            .map_err(|e| ValidationError::InvalidJson(e.to_string()))?;
 
-            // Validate name length
-            if user.name.len() < 2 {
-                return Err(ValidationError::NameTooShort);
-            }
-
-            // Validate email (simple check)
-            if !user.email.contains('@') {
-                return Err(ValidationError::InvalidEmail);
-            }
-
-            Ok(ValidatedJson(user))
+        // Validate name length
+        if user.name.len() < 2 {
+            return Err(ValidationError::NameTooShort);
         }
+
+        // Validate email (simple check)
+        if !user.email.contains('@') {
+            return Err(ValidationError::InvalidEmail);
+        }
+
+        Ok(ValidatedJson(user))
     }
 }
 

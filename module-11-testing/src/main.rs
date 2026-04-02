@@ -2,20 +2,43 @@
 //!
 //! Testing Axum applications:
 //! - Unit testing handlers
-//! - Integration testing with TestClient
+//! - Integration testing with `TestClient`
 //! - Testing with mock state
 
 use axum::{
+    Json, Router,
     extract::{Path, State},
     http::StatusCode,
     routing::get,
-    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
 };
+
+// ============================================================================
+// MAIN
+// ============================================================================
+
+#[tokio::main]
+async fn main() {
+    let store = Arc::new(RwLock::new(HashMap::new()));
+    let app = create_app(store);
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+    println!("🚀 Module 11: Testing");
+    println!("   Server: http://localhost:3000\n");
+    println!("📝 Endpoints:");
+    println!("   GET  /health    - Health check");
+    println!("   GET  /users     - List users");
+    println!("   POST /users     - Create user");
+    println!("   GET  /users/:id - Get user\n");
+    println!("🧪 Run tests: cargo test");
+
+    axum::serve(listener, app).await.unwrap();
+}
 
 // ============================================================================
 // APPLICATION CODE
@@ -86,7 +109,7 @@ mod tests {
     use super::*;
     use axum::{body::Body, http::Request};
     use http_body_util::BodyExt;
-    use tower::ServiceExt; // for `oneshot`
+    use tower::ServiceExt;
 
     fn test_store() -> UserStore {
         Arc::new(RwLock::new(HashMap::new()))
@@ -181,27 +204,4 @@ mod tests {
         let users: Vec<User> = serde_json::from_slice(&body).unwrap();
         assert_eq!(users.len(), 1);
     }
-}
-
-// ============================================================================
-// MAIN
-// ============================================================================
-
-#[tokio::main]
-async fn main() {
-    let store = Arc::new(RwLock::new(HashMap::new()));
-    let app = create_app(store);
-
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-
-    println!("🚀 Module 11: Testing");
-    println!("   Server: http://localhost:3000\n");
-    println!("📝 Endpoints:");
-    println!("   GET  /health    - Health check");
-    println!("   GET  /users     - List users");
-    println!("   POST /users     - Create user");
-    println!("   GET  /users/:id - Get user\n");
-    println!("🧪 Run tests: cargo test");
-
-    axum::serve(listener, app).await.unwrap();
 }
