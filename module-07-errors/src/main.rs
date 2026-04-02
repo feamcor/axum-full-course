@@ -6,13 +6,13 @@
 //! - Result-based handlers
 //! - Error recovery patterns
 
-use axum::{
-    Json, Router,
-    extract::Path,
-    http::StatusCode,
-    response::{IntoResponse, Response},
-    routing::get,
-};
+use axum::Json;
+use axum::Router;
+use axum::extract::Path;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::response::Response;
+use axum::routing::get;
 use serde::Serialize;
 use thiserror::Error;
 
@@ -54,9 +54,7 @@ impl IntoResponse for AppError {
         let (status, message) = match &self {
             AppError::UserNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
             AppError::InvalidInput(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::DatabaseError(_) | AppError::Internal => {
-                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
-            }
+            AppError::DatabaseError(_) | AppError::Internal => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, self.to_string()),
         };
 

@@ -5,17 +5,17 @@
 //! - Integration testing with `TestClient`
 //! - Testing with mock state
 
-use axum::{
-    Json, Router,
-    extract::{Path, State},
-    http::StatusCode,
-    routing::get,
-};
-use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use axum::Json;
+use axum::Router;
+use axum::extract::Path;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::routing::get;
+use serde::Deserialize;
+use serde::Serialize;
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::RwLock;
 
 // ============================================================================
 // MAIN
@@ -62,28 +62,15 @@ async fn list_users(State(store): State<UserStore>) -> Json<Vec<User>> {
     Json(users.values().cloned().collect())
 }
 
-async fn get_user(
-    State(store): State<UserStore>,
-    Path(id): Path<u64>,
-) -> Result<Json<User>, StatusCode> {
+async fn get_user(State(store): State<UserStore>, Path(id): Path<u64>) -> Result<Json<User>, StatusCode> {
     let users = store.read().unwrap();
-    users
-        .get(&id)
-        .cloned()
-        .map(Json)
-        .ok_or(StatusCode::NOT_FOUND)
+    users.get(&id).cloned().map(Json).ok_or(StatusCode::NOT_FOUND)
 }
 
-async fn create_user(
-    State(store): State<UserStore>,
-    Json(input): Json<CreateUser>,
-) -> (StatusCode, Json<User>) {
+async fn create_user(State(store): State<UserStore>, Json(input): Json<CreateUser>) -> (StatusCode, Json<User>) {
     let mut users = store.write().unwrap();
     let id = users.len() as u64 + 1;
-    let user = User {
-        id,
-        name: input.name,
-    };
+    let user = User { id, name: input.name };
     users.insert(id, user.clone());
     (StatusCode::CREATED, Json(user))
 }
@@ -107,7 +94,8 @@ fn create_app(store: UserStore) -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::{body::Body, http::Request};
+    use axum::body::Body;
+    use axum::http::Request;
     use http_body_util::BodyExt;
     use tower::ServiceExt;
 
@@ -120,12 +108,7 @@ mod tests {
         let app = create_app(test_store());
 
         let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/health")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
+            .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
             .await
             .unwrap();
 
@@ -163,12 +146,7 @@ mod tests {
         let app = create_app(test_store());
 
         let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/users/999")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
+            .oneshot(Request::builder().uri("/users/999").body(Body::empty()).unwrap())
             .await
             .unwrap();
 
@@ -189,12 +167,7 @@ mod tests {
         let app = create_app(store);
 
         let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/users")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
+            .oneshot(Request::builder().uri("/users").body(Body::empty()).unwrap())
             .await
             .unwrap();
 

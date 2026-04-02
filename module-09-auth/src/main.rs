@@ -6,17 +6,29 @@
 //! - Auth middleware
 //! - Protected routes
 
-use axum::{
-    Json, Router,
-    extract::{Request, State},
-    http::StatusCode,
-    middleware::{self, Next},
-    response::{IntoResponse, Response},
-    routing::{get, post},
+use axum::Json;
+use axum::Router;
+use axum::extract::Request;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::middleware::Next;
+use axum::middleware::{
+    self,
 };
-use chrono::{Duration, Utc};
-use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use serde::{Deserialize, Serialize};
+use axum::response::IntoResponse;
+use axum::response::Response;
+use axum::routing::get;
+use axum::routing::post;
+use chrono::Duration;
+use chrono::Utc;
+use jsonwebtoken::DecodingKey;
+use jsonwebtoken::EncodingKey;
+use jsonwebtoken::Header;
+use jsonwebtoken::Validation;
+use jsonwebtoken::decode;
+use jsonwebtoken::encode;
+use serde::Deserialize;
+use serde::Serialize;
 use std::sync::Arc;
 
 // ============================================================================
@@ -71,7 +83,9 @@ struct CurrentUser {
 // ============================================================================
 
 fn hash_password(password: &str) -> String {
-    use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
+    use argon2::Argon2;
+    use argon2::PasswordHasher;
+    use argon2::password_hash::SaltString;
     let salt = SaltString::generate(&mut rand::rngs::OsRng);
     Argon2::default()
         .hash_password(password.as_bytes(), &salt)
@@ -82,7 +96,9 @@ fn hash_password(password: &str) -> String {
 /// Verify password against hash (demonstration function)
 #[allow(dead_code)]
 fn verify_password(password: &str, hash: &str) -> bool {
-    use argon2::{Argon2, PasswordHash, PasswordVerifier};
+    use argon2::Argon2;
+    use argon2::PasswordHash;
+    use argon2::PasswordVerifier;
     let parsed_hash = PasswordHash::new(hash).unwrap();
     Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
@@ -204,10 +220,7 @@ async fn main() {
     let protected_routes = Router::new()
         .route("/me", get(protected))
         .route("/admin", get(admin_only))
-        .route_layer(middleware::from_fn_with_state(
-            config.clone(),
-            auth_middleware,
-        ));
+        .route_layer(middleware::from_fn_with_state(config.clone(), auth_middleware));
 
     let app = Router::new()
         .route("/register", post(register))

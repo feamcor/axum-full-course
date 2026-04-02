@@ -5,21 +5,26 @@
 //! - Custom middleware with `from_fn`
 //! - Route-specific layers
 
-use axum::{
-    Router,
-    extract::Request,
-    http::{HeaderValue, Method, StatusCode, header},
-    middleware::{self, Next},
-    response::{IntoResponse, Response},
-    routing::get,
+use axum::Router;
+use axum::extract::Request;
+use axum::http::HeaderValue;
+use axum::http::Method;
+use axum::http::StatusCode;
+use axum::http::header;
+use axum::middleware::Next;
+use axum::middleware::{
+    self,
 };
-use std::time::{Duration, Instant};
+use axum::response::IntoResponse;
+use axum::response::Response;
+use axum::routing::get;
+use std::time::Duration;
+use std::time::Instant;
 use tower::ServiceBuilder;
-use tower_http::{
-    compression::CompressionLayer,
-    cors::{Any, CorsLayer},
-    trace::TraceLayer,
-};
+use tower_http::compression::CompressionLayer;
+use tower_http::cors::Any;
+use tower_http::cors::CorsLayer;
+use tower_http::trace::TraceLayer;
 use tracing::Level;
 
 // ============================================================================
@@ -58,10 +63,7 @@ async fn timing_middleware(request: Request, next: Next) -> Response {
 
 /// Authentication middleware
 async fn auth_middleware(request: Request, next: Next) -> Result<Response, StatusCode> {
-    let auth_header = request
-        .headers()
-        .get("X-API-Key")
-        .and_then(|v| v.to_str().ok());
+    let auth_header = request.headers().get("X-API-Key").and_then(|v| v.to_str().ok());
 
     match auth_header {
         Some("secret-key") => Ok(next.run(request).await),

@@ -10,15 +10,24 @@
 //! - Custom extractors
 //! - Extractor ordering (important!)
 
-use axum::{
-    Json, Router,
-    body::Bytes,
-    extract::{FromRequest, FromRequestParts, Path, Query, Request, State},
-    http::{StatusCode, header::HeaderMap, request::Parts},
-    response::{IntoResponse, Response},
-    routing::{get, post},
-};
-use serde::{Deserialize, Serialize};
+use axum::Json;
+use axum::Router;
+use axum::body::Bytes;
+use axum::extract::FromRequest;
+use axum::extract::FromRequestParts;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::Request;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::http::header::HeaderMap;
+use axum::http::request::Parts;
+use axum::response::IntoResponse;
+use axum::response::Response;
+use axum::routing::get;
+use axum::routing::post;
+use serde::Deserialize;
+use serde::Serialize;
 use std::sync::Arc;
 
 // ============================================================================
@@ -208,12 +217,8 @@ enum ValidationError {
 impl IntoResponse for ValidationError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
-            ValidationError::InvalidJson(e) => {
-                (StatusCode::BAD_REQUEST, format!("Invalid JSON: {e}"))
-            }
-            ValidationError::InvalidEmail => {
-                (StatusCode::BAD_REQUEST, "Invalid email format".to_string())
-            }
+            ValidationError::InvalidJson(e) => (StatusCode::BAD_REQUEST, format!("Invalid JSON: {e}")),
+            ValidationError::InvalidEmail => (StatusCode::BAD_REQUEST, "Invalid email format".to_string()),
             ValidationError::NameTooShort => (
                 StatusCode::BAD_REQUEST,
                 "Name must be at least 2 characters".to_string(),

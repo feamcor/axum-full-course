@@ -6,17 +6,20 @@
 //! - Structured logging with tracing
 //! - Health checks
 
-use axum::{Json, Router, extract::State, routing::get};
-use std::{
-    sync::{
-        Arc,
-        atomic::{AtomicBool, AtomicU64, Ordering},
-    },
-    time::Duration,
-};
+use axum::Json;
+use axum::Router;
+use axum::extract::State;
+use axum::routing::get;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering;
+use std::time::Duration;
 use tokio::net::TcpListener;
-use tower_http::{compression::CompressionLayer, trace::TraceLayer};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tower_http::compression::CompressionLayer;
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 // ============================================================================
 // APPLICATION STATE
@@ -45,9 +48,7 @@ async fn health() -> &'static str {
     "OK"
 }
 
-async fn ready(
-    State(state): State<AppState>,
-) -> Result<&'static str, (axum::http::StatusCode, &'static str)> {
+async fn ready(State(state): State<AppState>) -> Result<&'static str, (axum::http::StatusCode, &'static str)> {
     if state.ready.load(Ordering::SeqCst) {
         Ok("ready")
     } else {
@@ -112,9 +113,7 @@ async fn main() {
 
 async fn shutdown_signal(state: AppState) {
     let ctrl_c = async {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("Failed to install Ctrl+C handler");
+        tokio::signal::ctrl_c().await.expect("Failed to install Ctrl+C handler");
     };
 
     #[cfg(unix)]

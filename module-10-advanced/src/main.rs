@@ -2,20 +2,24 @@
 //!
 //! `WebSockets`, SSE, File uploads, Static files
 
-use axum::{
-    Router,
-    extract::{
-        Multipart,
-        ws::{Message, WebSocket, WebSocketUpgrade},
-    },
-    response::{
-        Html, IntoResponse,
-        sse::{Event, KeepAlive, Sse},
-    },
-    routing::{get, post},
+use axum::Router;
+use axum::extract::Multipart;
+use axum::extract::ws::Message;
+use axum::extract::ws::WebSocket;
+use axum::extract::ws::WebSocketUpgrade;
+use axum::response::Html;
+use axum::response::IntoResponse;
+use axum::response::sse::Event;
+use axum::response::sse::KeepAlive;
+use axum::response::sse::Sse;
+use axum::routing::get;
+use axum::routing::post;
+use futures::stream::Stream;
+use futures::stream::{
+    self,
 };
-use futures::stream::{self, Stream};
-use std::{convert::Infallible, time::Duration};
+use std::convert::Infallible;
+use std::time::Duration;
 use tokio_stream::StreamExt;
 use tower_http::services::ServeDir;
 
@@ -43,11 +47,10 @@ async fn handle_socket(mut socket: WebSocket) {
 // ============================================================================
 
 async fn sse_handler() -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let stream = stream::repeat_with(|| {
-        Event::default().data(format!("Server time: {:?}", std::time::SystemTime::now()))
-    })
-    .map(Ok)
-    .throttle(Duration::from_secs(1));
+    let stream =
+        stream::repeat_with(|| Event::default().data(format!("Server time: {:?}", std::time::SystemTime::now())))
+            .map(Ok)
+            .throttle(Duration::from_secs(1));
 
     Sse::new(stream).keep_alive(KeepAlive::default())
 }

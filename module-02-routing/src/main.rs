@@ -7,11 +7,14 @@
 //! - Router nesting and merging
 //! - Method routing (GET, POST, PUT, DELETE, etc.)
 
-use axum::{
-    Router,
-    extract::{Path, Query},
-    routing::{delete, get, patch, post, put},
-};
+use axum::Router;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::routing::delete;
+use axum::routing::get;
+use axum::routing::patch;
+use axum::routing::post;
+use axum::routing::put;
 use serde::Deserialize;
 
 // ============================================================================
@@ -119,15 +122,10 @@ async fn delete_user(Path(id): Path<u64>) -> String {
 
 /// Create a sub-router for user-related routes
 fn user_routes() -> Router {
-    Router::new()
-        .route("/", get(list_users).post(create_user))
-        .route(
-            "/{id}",
-            get(get_user)
-                .put(update_user)
-                .patch(patch_user)
-                .delete(delete_user),
-        )
+    Router::new().route("/", get(list_users).post(create_user)).route(
+        "/{id}",
+        get(get_user).put(update_user).patch(patch_user).delete(delete_user),
+    )
 }
 
 async fn list_users() -> &'static str {
@@ -136,9 +134,7 @@ async fn list_users() -> &'static str {
 
 /// Create a sub-router for post-related routes
 fn post_routes() -> Router {
-    Router::new()
-        .route("/", get(list_posts))
-        .route("/{id}", get(get_post))
+    Router::new().route("/", get(list_posts)).route("/{id}", get(get_post))
 }
 
 async fn list_posts() -> &'static str {
@@ -181,52 +177,45 @@ async fn not_found() -> (axum::http::StatusCode, &'static str) {
 
 #[tokio::main]
 async fn main() {
-    let app =
-        Router::new()
-            // Basic routes
-            .route("/", get(|| async { "Welcome to the Routing Module!" }))
-            // ===== HTTP METHODS DEMO =====
-            // Each method demonstrated with a standalone route
-            .route("/resource", get(|| async { "GET - Read resource" }))
-            .route("/resource", post(|| async { "POST - Create resource" }))
-            .route(
-                "/resource/{id}",
-                get(|Path(id): Path<u64>| async move { format!("GET - Read resource {id}") }),
-            )
-            .route(
-                "/resource/{id}",
-                put(
-                    |Path(id): Path<u64>| async move { format!("PUT - Full update resource {id}") },
-                ),
-            )
-            .route(
-                "/resource/{id}",
-                patch(|Path(id): Path<u64>| async move {
-                    format!("PATCH - Partial update resource {id}")
-                }),
-            )
-            .route(
-                "/resource/{id}",
-                delete(
-                    |Path(id): Path<u64>| async move { format!("DELETE - Remove resource {id}") },
-                ),
-            )
-            // Path parameters (new syntax!)
-            .route("/users/{id}/posts/{post_id}", get(get_user_post))
-            .route(
-                "/users/{user_id}/posts/{post_id}/comments/{comment_id}",
-                get(get_comment),
-            )
-            // Wildcard route (must come after specific routes)
-            .route("/files/{*path}", get(files))
-            // Query parameters
-            .route("/items", get(list_items))
-            .route("/search", get(search))
-            // Nested routers - creates /api/v1/users, /api/v1/posts, etc.
-            .nest("/api/v1", api_v1_routes())
-            .nest("/api/v2", api_v2_routes())
-            // Fallback for unmatched routes
-            .fallback(not_found);
+    let app = Router::new()
+        // Basic routes
+        .route("/", get(|| async { "Welcome to the Routing Module!" }))
+        // ===== HTTP METHODS DEMO =====
+        // Each method demonstrated with a standalone route
+        .route("/resource", get(|| async { "GET - Read resource" }))
+        .route("/resource", post(|| async { "POST - Create resource" }))
+        .route(
+            "/resource/{id}",
+            get(|Path(id): Path<u64>| async move { format!("GET - Read resource {id}") }),
+        )
+        .route(
+            "/resource/{id}",
+            put(|Path(id): Path<u64>| async move { format!("PUT - Full update resource {id}") }),
+        )
+        .route(
+            "/resource/{id}",
+            patch(|Path(id): Path<u64>| async move { format!("PATCH - Partial update resource {id}") }),
+        )
+        .route(
+            "/resource/{id}",
+            delete(|Path(id): Path<u64>| async move { format!("DELETE - Remove resource {id}") }),
+        )
+        // Path parameters (new syntax!)
+        .route("/users/{id}/posts/{post_id}", get(get_user_post))
+        .route(
+            "/users/{user_id}/posts/{post_id}/comments/{comment_id}",
+            get(get_comment),
+        )
+        // Wildcard route (must come after specific routes)
+        .route("/files/{*path}", get(files))
+        // Query parameters
+        .route("/items", get(list_items))
+        .route("/search", get(search))
+        // Nested routers - creates /api/v1/users, /api/v1/posts, etc.
+        .nest("/api/v1", api_v1_routes())
+        .nest("/api/v2", api_v2_routes())
+        // Fallback for unmatched routes
+        .fallback(not_found);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await

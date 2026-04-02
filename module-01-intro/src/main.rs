@@ -7,10 +7,9 @@
 //! - Understanding the Router type
 //! - Basic request/response flow
 
-use axum::{
-    Router,
-    routing::{get, post},
-};
+use axum::Router;
+use axum::routing::get;
+use axum::routing::post;
 
 // ============================================================================
 // LESSON 1: Your First Handler
@@ -123,7 +122,5 @@ async fn main() {
     //
     // `axum::serve` is the new function in Axum 0.8+
     // It replaces the old hyper::Server approach
-    axum::serve(listener, app)
-        .await
-        .expect("Server failed to start");
+    axum::serve(listener, app).await.expect("Server failed to start");
 }

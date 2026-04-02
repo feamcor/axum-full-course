@@ -8,13 +8,18 @@
 //! - Status codes and headers
 //! - The `IntoResponse` trait
 
-use axum::{
-    Router,
-    body::Body,
-    http::{HeaderMap, HeaderValue, StatusCode, header},
-    response::{Html, IntoResponse, Json, Redirect, Response},
-    routing::get,
-};
+use axum::Router;
+use axum::body::Body;
+use axum::http::HeaderMap;
+use axum::http::HeaderValue;
+use axum::http::StatusCode;
+use axum::http::header;
+use axum::response::Html;
+use axum::response::IntoResponse;
+use axum::response::Json;
+use axum::response::Redirect;
+use axum::response::Response;
+use axum::routing::get;
 use serde::Serialize;
 
 // ============================================================================
@@ -88,11 +93,7 @@ async fn json_users() -> Json<UsersResponse> {
         },
     ];
     let total = users.len();
-    Json(UsersResponse {
-        users,
-        total,
-        page: 1,
-    })
+    Json(UsersResponse { users, total, page: 1 })
 }
 
 /// JSON with custom status code
@@ -154,10 +155,7 @@ async fn html_page() -> Html<&'static str> {
 #[allow(clippy::format_collect, clippy::needless_raw_string_hashes)]
 async fn dynamic_html() -> Html<String> {
     let items = ["Routing", "Extractors", "Responses", "Middleware"];
-    let list_items: String = items
-        .iter()
-        .map(|item| format!("<li>{item}</li>"))
-        .collect();
+    let list_items: String = items.iter().map(|item| format!("<li>{item}</li>")).collect();
 
     Html(format!(
         r#"
@@ -195,10 +193,7 @@ async fn with_headers() -> (HeaderMap, &'static str) {
         header::CONTENT_TYPE,
         HeaderValue::from_static("text/plain; charset=utf-8"),
     );
-    headers.insert(
-        header::CACHE_CONTROL,
-        HeaderValue::from_static("max-age=3600"),
-    );
+    headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("max-age=3600"));
     headers.insert("X-Custom-Header", HeaderValue::from_static("Hello!"));
 
     (headers, "Response with custom headers")

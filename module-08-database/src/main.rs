@@ -6,15 +6,17 @@
 //! - Query macros
 //! - Migrations
 
-use axum::{
-    Json, Router,
-    extract::{Path, State},
-    http::StatusCode,
-    response::IntoResponse,
-    routing::get,
-};
-use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use axum::Json;
+use axum::Router;
+use axum::extract::Path;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::routing::get;
+use serde::Deserialize;
+use serde::Serialize;
+use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
 
 // ============================================================================
@@ -104,7 +106,7 @@ async fn update_user(
     Json(input): Json<UpdateUser>,
 ) -> Result<Json<User>, DbError> {
     let user = sqlx::query_as::<_, User>(
-        "UPDATE users SET name = COALESCE($2, name), email = COALESCE($3, email) WHERE id = $1 RETURNING *"
+        "UPDATE users SET name = COALESCE($2, name), email = COALESCE($3, email) WHERE id = $1 RETURNING *",
     )
     .bind(id)
     .bind(&input.name)
@@ -115,10 +117,7 @@ async fn update_user(
     Ok(Json(user))
 }
 
-async fn delete_user(
-    State(pool): State<PgPool>,
-    Path(id): Path<Uuid>,
-) -> Result<StatusCode, DbError> {
+async fn delete_user(State(pool): State<PgPool>, Path(id): Path<Uuid>) -> Result<StatusCode, DbError> {
     let result = sqlx::query("DELETE FROM users WHERE id = $1")
         .bind(id)
         .execute(&pool)
@@ -163,10 +162,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/users", get(list_users).post(create_user))
-        .route(
-            "/users/{id}",
-            get(get_user).put(update_user).delete(delete_user),
-        )
+        .route("/users/{id}", get(get_user).put(update_user).delete(delete_user))
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

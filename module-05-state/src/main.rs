@@ -6,12 +6,16 @@
 //! - Database connection pools
 //! - Multiple state types
 
-use axum::{Json, Router, extract::State, http::StatusCode, routing::get};
-use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use axum::Json;
+use axum::Router;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::routing::get;
+use serde::Deserialize;
+use serde::Serialize;
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::RwLock;
 use uuid::Uuid;
 
 // ============================================================================
@@ -69,10 +73,7 @@ async fn list_todos(State(store): State<TodoStore>) -> Json<Vec<Todo>> {
 }
 
 // Create a new todo
-async fn create_todo(
-    State(store): State<TodoStore>,
-    Json(input): Json<CreateTodo>,
-) -> (StatusCode, Json<Todo>) {
+async fn create_todo(State(store): State<TodoStore>, Json(input): Json<CreateTodo>) -> (StatusCode, Json<Todo>) {
     let todo = Todo {
         id: Uuid::new_v4().to_string(),
         title: input.title,
@@ -90,11 +91,7 @@ async fn get_todo(
     axum::extract::Path(id): axum::extract::Path<String>,
 ) -> Result<Json<Todo>, StatusCode> {
     let todos = store.read().unwrap();
-    todos
-        .get(&id)
-        .cloned()
-        .map(Json)
-        .ok_or(StatusCode::NOT_FOUND)
+    todos.get(&id).cloned().map(Json).ok_or(StatusCode::NOT_FOUND)
 }
 
 // Update a todo
